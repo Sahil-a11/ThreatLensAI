@@ -310,7 +310,7 @@ class ThreatPredictor:
     def get_model_info(self) -> dict:
         """Return model metadata for dashboard display."""
         return {
-            'version': self.config.get('version', 'v4.0'),
+            'version': self.config.get('version', 'Production'),
             'base_models': list(self.base_models.keys()),
             'has_stacking': self.meta_learner is not None,
             'total_models': len(self.base_models) + (1 if self.meta_learner else 0),

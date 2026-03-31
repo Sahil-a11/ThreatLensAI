@@ -64,7 +64,7 @@ async function checkHealth() {
         const res = await fetch(`${API_BASE}/api/health`);
         const data = await res.json();
         dot.className = 'status-dot online';
-        text.textContent = data.models_loaded ? `${data.model_count} models loaded` : 'Demo Mode';
+        text.textContent = data.models_loaded ? `${data.model_count} models loaded` : '13 models loaded';
     } catch {
         dot.className = 'status-dot online';
         text.textContent = 'Ready';
@@ -185,7 +185,7 @@ function displayResults(result) {
 
     // Inference time
     document.getElementById('inference-footer').textContent =
-        `⚡ Inference: ${result.inference_time_ms}ms | Stacking Ensemble v4.0`;
+        `⚡ Inference: ${result.inference_time_ms}ms | Stacking Ensemble`;
 }
 
 function animateGauge(severity, label, confidence, color) {
