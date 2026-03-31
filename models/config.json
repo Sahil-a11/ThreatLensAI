@@ -1,0 +1,30 @@
+{
+  "base_models": [
+    "logistic_regression",
+    "random_forest",
+    "xgboost_tuned",
+    "linear_svm",
+    "multinomial_nb"
+  ],
+  "has_stacking": true,
+  "tfidf_max_features": 20000,
+  "structural_features": [
+    "num_urls",
+    "num_exclamations",
+    "num_question_marks",
+    "has_urgency",
+    "has_money",
+    "capital_ratio",
+    "special_char_ratio",
+    "word_count",
+    "avg_word_length"
+  ],
+  "severity_labels": [
+    "Normal",
+    "Low",
+    "Medium",
+    "High",
+    "Critical"
+  ],
+  "version": "v4.0"
+}

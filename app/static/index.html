@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThreatLens AI — Email Threat Intelligence Dashboard</title>
+    <meta name="description" content="Industry-level NLP-powered email threat severity prediction using 13 ML models including BERT, XGBoost, and Stacking Ensembles.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=2">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <path d="M14 2L3 8v12l11 6 11-6V8L14 2z" stroke="url(#grad)" stroke-width="2" fill="none"/>
+                    <path d="M14 8L9 11v6l5 3 5-3v-6l-5-3z" fill="url(#grad)" opacity="0.6"/>
+                    <defs><linearGradient id="grad" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+                </svg>
+            </div>
+            <span class="brand-name">ThreatLens<span class="brand-ai">AI</span></span>
+        </div>
+        <div class="nav-links">
+            <button class="nav-link active" data-page="scanner" id="nav-scanner">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Scanner
+            </button>
+            <button class="nav-link" data-page="analytics" id="nav-analytics">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                Analytics
+            </button>
+            <button class="nav-link" data-page="models" id="nav-models">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Models
+            </button>
+            <button class="nav-link" data-page="about" id="nav-about">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                About
+            </button>
+        </div>
+        <div class="nav-controls" style="display: flex; gap: 16px; align-items: center;">
+            <select id="theme-selector" style="background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: 6px; padding: 6px 10px; font-size: 0.8rem; cursor: pointer; outline: none;">
+                <option value="dark">🌙 Dark (Default)</option>
+                <option value="cyberpunk">🌆 Cyberpunk</option>
+                <option value="hacker">💻 Hacker</option>
+                <option value="light">☀️ Light Mode</option>
+            </select>
+            <div class="nav-status">
+                <div class="status-dot" id="status-dot"></div>
+                <span class="status-text" id="status-text">Connecting...</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page: Scanner -->
+    <main class="page active" id="page-scanner">
+        <div class="scanner-layout">
+            <!-- Left: Input -->
+            <div class="panel glass-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Email Threat Scanner
+                    </h2>
+                    <span class="panel-badge">Stacking Ensemble</span>
+                </div>
+                <div class="input-group">
+                    <label for="email-input" class="input-label">Paste email content below</label>
+                    <textarea id="email-input" class="email-textarea" placeholder="Dear Customer,&#10;&#10;Your account has been compromised. Click the link below to verify your identity immediately or your account will be permanently suspended.&#10;&#10;http://suspicious-link.com/verify&#10;&#10;Act NOW - you have 24 hours!" spellcheck="false"></textarea>
+                    <div class="input-footer">
+                        <span class="char-count" id="char-count">0 chars</span>
+                        <div class="input-actions">
+                            <button class="btn btn-ghost" id="btn-clear" title="Clear">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                Clear
+                            </button>
+                            <button class="btn btn-ghost" id="btn-sample" title="Load Sample">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                Sample
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-scan" id="btn-scan">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span class="btn-text">Analyze Threat</span>
+                    <div class="btn-loader" style="display:none">
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Right: Results -->
+            <div class="results-area" id="results-area">
+                <!-- Empty State -->
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h3>Ready to Scan</h3>
+                    <p>Paste an email and click "Analyze Threat" to get started</p>
+                </div>
+
+                <!-- Results (hidden initially) -->
+                <div class="results-content" id="results-content" style="display:none">
+                    <!-- Severity Gauge -->
+                    <div class="panel glass-panel gauge-panel">
+                        <div class="gauge-container">
+                            <svg class="gauge-svg" viewBox="0 0 200 120" id="gauge-svg">
+                                <defs>
+                                    <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#2ecc71"/>
+                                        <stop offset="25%" stop-color="#3498db"/>
+                                        <stop offset="50%" stop-color="#f39c12"/>
+                                        <stop offset="75%" stop-color="#e74c3c"/>
+                                        <stop offset="100%" stop-color="#8e44ad"/>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="12" stroke-linecap="round"/>
+                                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gauge-gradient)" stroke-width="12" stroke-linecap="round" id="gauge-fill" stroke-dasharray="0 251.2"/>
+                                <circle cx="100" cy="100" r="4" fill="currentColor" id="gauge-needle-dot"/>
+                            </svg>
+                            <div class="gauge-label" id="gauge-label">Normal</div>
+                            <div class="gauge-confidence" id="gauge-confidence">0% confidence</div>
+                        </div>
+                    </div>
+
+                    <!-- Probability Bars -->
+                    <div class="panel glass-panel">
+                        <h3 class="panel-subtitle">Severity Probability Distribution</h3>
+                        <div class="prob-bars" id="prob-bars"></div>
+                    </div>
+
+                    <!-- Risk Indicators -->
+                    <div class="panel glass-panel">
+                        <h3 class="panel-subtitle">Risk Indicators</h3>
+                        <div class="risk-list" id="risk-list"></div>
+                    </div>
+
+                    <!-- Individual Model Predictions -->
+                    <div class="panel glass-panel">
+                        <h3 class="panel-subtitle">Individual Model Predictions</h3>
+                        <div class="model-votes" id="model-votes"></div>
+                    </div>
+
+                    <!-- Structural Features -->
+                    <div class="panel glass-panel">
+                        <h3 class="panel-subtitle">Structural Analysis</h3>
+                        <div class="struct-grid" id="struct-grid"></div>
+                    </div>
+
+                    <!-- Inference Time -->
+                    <div class="inference-footer" id="inference-footer"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Page: Analytics -->
+    <main class="page" id="page-analytics">
+        <div class="analytics-layout">
+            <!-- Stats Cards -->
+            <div class="stats-row">
+                <div class="stat-card glass-panel">
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">Total Scans</div>
+                </div>
+                <div class="stat-card glass-panel">
+                    <div class="stat-value stat-threat" id="stat-threats">0</div>
+                    <div class="stat-label">Threats Detected</div>
+                </div>
+                <div class="stat-card glass-panel">
+                    <div class="stat-value stat-critical" id="stat-critical">0</div>
+                    <div class="stat-label">Critical Alerts</div>
+                </div>
+                <div class="stat-card glass-panel">
+                    <div class="stat-value stat-safe" id="stat-safe">0</div>
+                    <div class="stat-label">Safe Emails</div>
+                </div>
+            </div>
+
+            <!-- Distribution Chart -->
+            <div class="panel glass-panel chart-panel">
+                <h3 class="panel-subtitle">Threat Distribution</h3>
+                <div class="distribution-chart" id="distribution-chart">
+                    <div class="dist-bar-container" id="dist-bars"></div>
+                </div>
+            </div>
+
+            <!-- Scan History -->
+            <div class="panel glass-panel">
+                <h3 class="panel-subtitle">Recent Scan History</h3>
+                <div class="scan-history" id="scan-history">
+                    <div class="empty-history">No scans yet. Analyze an email to see history here.</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Page: Models -->
+    <main class="page" id="page-models">
+        <div class="models-layout">
+            <div class="panel glass-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        Model Performance
+                    </h2>
+                    <span class="panel-badge">13 Models</span>
+                </div>
+                <div class="model-table-container">
+                    <table class="model-table" id="model-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Model</th>
+                                <th>Accuracy</th>
+                                <th>Macro F1</th>
+                                <th>MCC</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="model-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Architecture -->
+            <div class="panel glass-panel">
+                <h3 class="panel-subtitle">Pipeline Architecture</h3>
+                <div class="architecture-diagram" id="architecture-diagram">
+                    <div class="arch-flow">
+                        <div class="arch-node arch-input">
+                            <div class="arch-icon">📧</div>
+                            <div class="arch-label">Raw Email</div>
+                        </div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node arch-process">
+                            <div class="arch-icon">🔤</div>
+                            <div class="arch-label">Text Preprocessing<br><small>HTML → URLs → Deobfuscate → Tokenize</small></div>
+                        </div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node arch-process">
+                            <div class="arch-icon">📊</div>
+                            <div class="arch-label">Feature Engineering<br><small>TF-IDF (20K) + Structural (9)</small></div>
+                        </div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node arch-model">
+                            <div class="arch-icon">🤖</div>
+                            <div class="arch-label">5 Base Models<br><small>XGB, RF, LR, SVM, NB</small></div>
+                        </div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node arch-ensemble">
+                            <div class="arch-icon">🏆</div>
+                            <div class="arch-label">Stacking Ensemble<br><small>Meta-Learner (LogReg)</small></div>
+                        </div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-node arch-output">
+                            <div class="arch-icon">🎯</div>
+                            <div class="arch-label">Severity<br><small>Normal → Critical</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Page: About -->
+    <main class="page" id="page-about">
+        <div class="about-layout">
+            <div class="panel glass-panel about-hero">
+                <h1 class="about-title">Beyond Binary</h1>
+                <p class="about-subtitle">NLP-Based Multi-Class Threat Severity Prediction for Phishing Emails</p>
+                <div class="about-version">Version 4.0 — Production Architecture</div>
+            </div>
+
+            <div class="about-grid">
+                <div class="panel glass-panel about-card">
+                    <div class="about-card-icon">🔬</div>
+                    <h3>Research</h3>
+                    <p>Moves beyond simple binary (safe/threat) classification to 5-level severity grading, giving security teams actionable intelligence.</p>
+                </div>
+                <div class="panel glass-panel about-card">
+                    <div class="about-card-icon">📊</div>
+                    <h3>Dataset</h3>
+                    <p>50,000+ emails combining the Enron corpus (legitimate) with annotated phishing samples across 5 severity levels.</p>
+                </div>
+                <div class="panel glass-panel about-card">
+                    <div class="about-card-icon">🤖</div>
+                    <h3>13 Models</h3>
+                    <p>Traditional ML (LogReg, RF, XGBoost, SVM, NB), Ensembles (Voting, Stacking), Deep Learning (LSTM), and Transformers (BERT).</p>
+                </div>
+                <div class="panel glass-panel about-card">
+                    <div class="about-card-icon">🛡️</div>
+                    <h3>Explainable AI</h3>
+                    <p>SHAP values provide per-feature explanations for every prediction, enabling security analysts to understand WHY an email was flagged.</p>
+                </div>
+            </div>
+
+            <div class="panel glass-panel">
+                <h3 class="panel-subtitle">Key Improvements (v4.0)</h3>
+                <div class="improvements-list">
+                    <div class="improvement-item">
+                        <span class="improvement-check">✅</span>
+                        <div>
+                            <strong>3-Way Data Split</strong>
+                            <p>Train/Val/Test (60/20/20) prevents test data leakage</p>
+                        </div>
+                    </div>
+                    <div class="improvement-item">
+                        <span class="improvement-check">✅</span>
+                        <div>
+                            <strong>SMOTE Inside CV Folds</strong>
+                            <p>Prevents synthetic sample leakage between CV folds</p>
+                        </div>
+                    </div>
+                    <div class="improvement-item">
+                        <span class="improvement-check">✅</span>
+                        <div>
+                            <strong>Text Augmentation</strong>
+                            <p>WordNet synonym replacement for minority classes (High, Critical)</p>
+                        </div>
+                    </div>
+                    <div class="improvement-item">
+                        <span class="improvement-check">✅</span>
+                        <div>
+                            <strong>Optuna Hyperparameter Tuning</strong>
+                            <p>40 trials with crash-resilient SQLite storage on Google Drive</p>
+                        </div>
+                    </div>
+                    <div class="improvement-item">
+                        <span class="improvement-check">✅</span>
+                        <div>
+                            <strong>Statistical Significance</strong>
+                            <p>McNemar's Test + Bootstrap 95% CI confirms improvements are real</p>
+                        </div>
+                    </div>
+                    <div class="improvement-item">
+                        <span class="improvement-check">✅</span>
+                        <div>
+                            <strong>SHAP Explainability</strong>
+                            <p>Global + per-class feature importance for XGBoost</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/app.js?v=2"></script>
+</body>
+</html>
