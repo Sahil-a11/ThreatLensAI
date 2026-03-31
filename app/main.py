@@ -249,7 +249,7 @@ def _demo_prediction(text: str, start_time: float) -> dict:
 
 def _demo_model_info():
     return {
-        'version': 'v4.0 (Demo Mode)',
+        'version': 'Production (Demo Mode)',
         'base_models': ['logistic_regression', 'random_forest', 'xgboost_tuned', 'linear_svm', 'multinomial_nb'],
         'has_stacking': True,
         'total_models': 6,
