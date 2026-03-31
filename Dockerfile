@@ -16,8 +16,8 @@ RUN python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('p
 
 # App code and compressed models
 COPY app/ app/
-COPY models.zip .
-RUN unzip models.zip -d app/models/ && rm models.zip
+COPY models.zip.* .
+RUN cat models.zip.* > models.zip && unzip models.zip -d app/models/ && rm models.zip*
 
 EXPOSE 7860
 
