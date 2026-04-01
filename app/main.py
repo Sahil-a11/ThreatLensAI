@@ -63,18 +63,27 @@ def _ensure_models_extracted(models_dir: Path):
             zip_path.unlink()
     except Exception as e:
         logger.error(f"❌ Failed to extract models: {e}")
+        app.state.startup_error = f"Extraction Error: {str(e)}"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load models on startup."""
     logger.info("🚀 Loading ML models...")
+    app.state.startup_error = None
     _ensure_models_extracted(MODELS_DIR)
+    
+    # Using a global or app state to pass this to the route
+    import sys
     try:
+        if hasattr(app.state, 'startup_error') and app.state.startup_error:
+            raise RuntimeError(app.state.startup_error)
+            
         predictor.load()
         logger.info("✅ Models loaded successfully!")
     except Exception as e:
         logger.error(f"⚠️ Model loading failed: {e}")
         logger.info("Running in DEMO mode (no models loaded)")
+        app.state.startup_error = f"Load Error: {str(e)}"
     yield
     logger.info("Shutting down...")
 
@@ -127,6 +136,7 @@ class HealthResponse(BaseModel):
     models_loaded: bool
     model_count: int
     version: str
+    startup_error: Optional[str] = None
 
 
 # ── API Endpoints ──
@@ -140,11 +150,13 @@ async def serve_dashboard():
 @app.get("/api/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint."""
+    error_msg = getattr(app.state, 'startup_error', None)
     return HealthResponse(
         status="healthy",
         models_loaded=predictor._loaded,
         model_count=len(predictor.base_models),
         version="4.0.0",
+        startup_error=error_msg
     )
 
 
