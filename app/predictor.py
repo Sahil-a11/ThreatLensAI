@@ -139,11 +139,32 @@ class ThreatPredictor:
             'logistic_regression', 'random_forest', 'xgboost_tuned',
             'linear_svm', 'multinomial_nb'
         ])
+        # Force single-threaded execution to prevent Render 512MB RAM OOM crashes
+        def disable_parallelism(model_instance):
+            if hasattr(model_instance, 'n_jobs'):
+                try:
+                    setattr(model_instance, 'n_jobs', 1)
+                except:
+                    pass
+            if hasattr(model_instance, 'set_params'):
+                try:
+                    model_instance.set_params(n_jobs=1)
+                except BaseException:
+                    pass
+            # Fix xgboost specifically
+            if hasattr(model_instance, 'set_params'):
+                try:
+                    model_instance.set_params(nthread=1)
+                except BaseException:
+                    pass
+
         for name in base_model_names:
             model_path = self.models_dir / f'model_{name}.pkl'
             if model_path.exists():
-                self.base_models[name] = joblib.load(model_path)
-                logger.info(f"Base model loaded: {name}")
+                model = joblib.load(model_path)
+                disable_parallelism(model)
+                self.base_models[name] = model
+                logger.info(f"Base model loaded and single-threaded: {name}")
             else:
                 logger.warning(f"Base model NOT found: {model_path}")
 
@@ -151,6 +172,7 @@ class ThreatPredictor:
         meta_path = self.models_dir / 'stacking_meta_learner.pkl'
         if meta_path.exists():
             self.meta_learner = joblib.load(meta_path)
+            disable_parallelism(self.meta_learner)
             logger.info("Stacking meta-learner loaded")
 
         self._loaded = True
