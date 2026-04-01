@@ -14,11 +14,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # NLTK data
 RUN python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('punkt_tab', quiet=True); nltk.download('stopwords', quiet=True); nltk.download('wordnet', quiet=True); nltk.download('omw-1.4', quiet=True)"
 
-# App code and compressed models
+# App code
 COPY app/ app/
+
+# Reassemble split model archives and extract to models/ at project root
+# main.py resolves: Path(__file__).parent.parent / "models" => /app/models/
 COPY models.zip.* .
-RUN cat models.zip.* > models.zip && unzip models.zip -d app/models/ && rm models.zip*
+RUN cat models.zip.* > models.zip && \
+    unzip -o models.zip -d models/ && \
+    rm -f models.zip models.zip.* && \
+    echo "=== Models directory ===" && ls -la models/
 
-EXPOSE 7860
+EXPOSE 10000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]

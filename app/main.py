@@ -27,10 +27,48 @@ MODELS_DIR = Path(__file__).parent.parent / "models"
 predictor = ThreatPredictor(models_dir=str(MODELS_DIR))
 
 
+import os
+import glob
+import zipfile
+
+def _ensure_models_extracted(models_dir: Path):
+    """Automatically assemble and extract models if missing from zip parts."""
+    rf_model = models_dir / "model_random_forest.pkl"
+    if rf_model.exists():
+        return
+        
+    project_root = models_dir.parent
+    zip_parts = sorted(glob.glob(str(project_root / "models.zip.*")))
+    
+    if not zip_parts:
+        return
+        
+    logger.info(f"📦 Assembling {len(zip_parts)} split zip archives...")
+    zip_path = project_root / "models.zip"
+    try:
+        with open(zip_path, "wb") as f_out:
+            for part in zip_parts:
+                with open(part, "rb") as f_in:
+                    f_out.write(f_in.read())
+                    
+        logger.info("🔄 Extracting model files to models/ directory...")
+        models_dir.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(models_dir)
+            
+        logger.info("✅ Models extracted successfully!")
+        
+        # Cleanup
+        if zip_path.exists():
+            zip_path.unlink()
+    except Exception as e:
+        logger.error(f"❌ Failed to extract models: {e}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load models on startup."""
     logger.info("🚀 Loading ML models...")
+    _ensure_models_extracted(MODELS_DIR)
     try:
         predictor.load()
         logger.info("✅ Models loaded successfully!")
