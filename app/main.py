@@ -161,7 +161,7 @@ async def health_check():
 
 
 @app.post("/api/predict", response_model=PredictionResponse)
-async def predict_threat(request: EmailRequest):
+def predict_threat(request: EmailRequest):
     """Predict threat severity for a single email."""
     start = time.time()
 
@@ -179,7 +179,7 @@ async def predict_threat(request: EmailRequest):
 
 
 @app.post("/api/predict/batch")
-async def predict_batch(request: BatchEmailRequest):
+def predict_batch(request: BatchEmailRequest):
     """Predict threat severity for multiple emails."""
     results = []
     for email_text in request.emails:
@@ -198,7 +198,7 @@ async def predict_batch(request: BatchEmailRequest):
 
 
 @app.get("/api/model/info")
-async def model_info():
+def model_info():
     """Return model metadata and performance metrics."""
     if predictor._loaded:
         return predictor.get_model_info()
